@@ -99,6 +99,8 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# Eclipse / PyDev
 .settings
 .eclipse-pmd
 .project
