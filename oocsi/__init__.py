@@ -3,10 +3,13 @@ import socket
 import threading
 import time
 
+__author__ = 'matsfunk'
+
+
 class OOCSI:
     
-    def __init__(self, handle, host='localhost', port=4444):
-        self.receivers = {}
+    def __init__(self, handle, host='localhost', port=4444, callback=None):
+        self.receivers = {handle: callback}
         self.reconnect = True
         self.connected = False
         
@@ -78,8 +81,9 @@ class OOCSI:
         del event['recipient']
         del event['sender']
         del event['timestamp']
+        del event['data']
         
-        if recipient in self.receivers:
+        if recipient in self.receivers and self.receivers[recipient] != None:
             self.receivers[recipient](sender, recipient, event)
 #         else:
 #             print('not good -------------- ', filteredEvent)
@@ -101,6 +105,8 @@ class OOCSI:
         self.sock.close()
         self.connected = False
 
+    def handleEvent(self, sender, receiver, message):
+        {}
 
 class OOCSIThread(threading.Thread):
 
