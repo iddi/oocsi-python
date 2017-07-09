@@ -105,3 +105,4 @@ ENV/
 .eclipse-pmd
 .project
 .pydevproject
+.DS_Store
