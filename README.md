@@ -2,14 +2,14 @@
 Python client library for [OOCSI](https://github.com/iddi/oocsi). OOCSI is a multi-platform communication framework that allows for easy messaging between clients. OOCSI is light-weight, message-oriented, allows for point-to-point messaging and broadcasting to channels (or topics). The Python client library allows to connect from Python to an OOCSI server and to communicate with other OOCSI clients, on Python or on different platforms such as plain Java, Processing, Android, Websocket or Arduino ESP.
 
 ## Installation
-Installing the OOCSI library is very straight-froward for Python:
+Installing the OOCSI library is very straight-forward for Python:
 
 ```bash
 pip install oocsi
 ```
 
 ## Usage
-To use OOCSI on Python, we first need to connect to OOCSI. Then we can send and receive messages. This example follows the channel send and receive example that can be found in rhe [examples](examples/) folder.
+To use OOCSI on Python, we first need to connect to OOCSI. Then we can send and receive messages. This example follows the channel send and receive example that can be found in the [examples](examples/) folder.
 
 ### Connect
 The first step is to connect to a OOCSI server, either running on the local machine (see here how to do that) or on a publicly accessible server. To connect, you will need the server address and also create a unique handle for this client. This handle will be used to identify the client when other clients send messages to it. A handle is composed of ASCII characters, but cannot contain spaces.
@@ -71,6 +71,31 @@ oocsi.subscribe('testchannel', handleColorEvent)
 ### Sending messages (synchronous)
 Clients can send messages to others in the network also in a synchronous way. That means, that the client sends a message to another client and waits for a corresponding reply message. This is useful for queries for data or remote processing of data by another client.
 This mechanism is shown in the [call-response](examples/callResponse.py) example.
+
+
+### OOCSI Variables
+OOCSI can work with variables that are automatically synchronized over channels in the OOCSI network. A variable is created by a client for a channel on a key of a message. Whenever a message with that key is received over the channel the variable is locally updated, and whenever the local variable is set by the client, it will send out the new value on the given channel. 
+
+```python
+from oocsi import OOCSI
+
+# connect 
+oocsi = OOCSI('Alice', 'localhost')
+
+# subscribe to channel testchannel with a callback handleColorEvent
+color = oocsi.variable('colorchannel', 'color')
+
+# set the variable 
+color.set(255)
+
+# get the variable's value
+color.get()
+
+```  
+
+
+This mechanism is shown more detail in the [variables](examples/variables.py) example. In the OOCSI Python client, variables do not have different types such as int, float or string. Therefore, checking the content of the variable might be advisable before using it.  
+ 
 
 
 ## Limitations

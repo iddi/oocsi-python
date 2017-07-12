@@ -14,7 +14,7 @@ __author__ = 'matsfunk'
 class OOCSI:
     
     def __init__(self, handle, host='localhost', port=4444, callback=None):
-        self.receivers = {handle: callback}
+        self.receivers = {handle: [callback]}
         self.calls = {}
         self.services = {}
         self.reconnect = True
@@ -120,7 +120,8 @@ class OOCSI:
 
     def receiveChannelEvent(self, sender, recipient, event):
         if recipient in self.receivers and self.receivers[recipient] != None:
-            self.receivers[recipient](sender, recipient, event)
+            for x in self.receivers[recipient]:
+                x(sender, recipient, event)
 
     def send(self, channelName, data):
         self.internalSend('sendraw {0} {1}'.format(channelName, json.dumps(data)))
@@ -149,7 +150,10 @@ class OOCSI:
         self.log('registered responder on {0} for {1}'.format(channelName, callName))
 
     def subscribe(self, channelName, f):
-        self.receivers[channelName] = f
+        if channelName in self.receivers:
+            self.receivers[channelName].append(f)
+        else:
+            self.receivers[channelName] = [f]
         self.internalSend('subscribe {0}'.format(channelName))
         self.log('subscribed to {0}'.format(channelName))
     
@@ -157,6 +161,9 @@ class OOCSI:
         del self.receivers[channelName]
         self.internalSend('unsubscribe {0}'.format(channelName))
         self.log('unsubscribed from {0}'.format(channelName))
+
+    def variable(self, channelName, key):
+        return OOCSIVariable(self, channelName, key)
 
     def stop(self):
         self.reconnect = False
@@ -194,6 +201,21 @@ class OOCSICall:
         self.expiration = time.time()
         
 
+class OOCSIVariable(object):
+    def __init__(self, oocsi, channelName, key):
+        self.key = key
+        self.channel = channelName
+        oocsi.subscribe(channelName, self.internalReceiveValue)
+        self.oocsi = oocsi
+        self.value = None 
+    def get(self):
+        return self.value
+    def set(self, value):
+        self.value = value
+        self.oocsi.send(self.channel, {self.key: value})
+    def internalReceiveValue(self, sender, recipient, data):
+        if self.key in data:
+            self.value = data[self.key]
 
 
         
