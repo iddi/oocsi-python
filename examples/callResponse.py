@@ -13,7 +13,7 @@ def respondToEvent(response):
     # time.sleep(4)
 
 # start responder OOCSI client
-responder = OOCSI('callResponseResponder', 'localhost', 4444)
+responder = OOCSI('callResponseResponder', 'localhost')
 # register responder
 responder.register('colorChannel', 'colorGenerator', respondToEvent)
 
@@ -21,7 +21,7 @@ responder.register('colorChannel', 'colorGenerator', respondToEvent)
 ### test colorGenerator with two calls
 
 # start caller OOCSI client
-caller = OOCSI('callResponseSender', 'localhost', 4444)
+caller = OOCSI('callResponseSender', 'localhost')
 
 # asynchronous call
 call1 = caller.call('colorChannel', 'colorGenerator', {'oldColor': 9}, 1)

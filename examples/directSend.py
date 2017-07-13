@@ -6,7 +6,7 @@ from oocsi import OOCSI
 import time
 from random import random
 
-o = OOCSI('testsender', 'localhost', 4444)
+o = OOCSI('testsender', 'localhost')
 
 while 1:   
     message = {}
@@ -14,6 +14,8 @@ while 1:
     message['position'] = int(random() * 255)
 
     o.send('testreceiver', message)
+    print('to ', 'testreceiver', ' -> ', message)
+
 
     # wait and continue
     time.sleep(1)

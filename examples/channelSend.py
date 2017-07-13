@@ -6,7 +6,7 @@ from oocsi import OOCSI
 import time
 from random import random
 
-o = OOCSI('testsender', 'localhost', 4444)
+o = OOCSI('testsender', 'localhost')
 
 while 1:   
     message = {}

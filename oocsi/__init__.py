@@ -44,17 +44,21 @@ class OOCSI:
                 message = self.handle + '(JSON)'
                 self.internalSend(message)
             
-                data = self.sock.recv(1024)
+                data = self.sock.recv(1024).decode()
                 if data.startswith('{'):  
                     self.log('connection established')
                     # re-subscribe for channels
                     for channelName in self.receivers:
                         self.internalSend('subscribe {0}'.format(channelName))
                     self.connected = True
+                else:
+                    if data.startswith('error'):
+                        self.log(data)
+                        self.reconnect = False
     
                 while self.connected:
                     self.loop()
-    
+        
             finally:
                 {}
         
@@ -65,11 +69,11 @@ class OOCSI:
         print('[{0}]: {1}'.format(self.handle, message))
         
     def internalSend(self, msg):
-        self.sock.sendall(msg + '\n')
+        self.sock.sendall((msg + '\n').encode())
 
     def loop(self):
         try:
-            data = self.sock.recv(10 * 1024)
+            data = self.sock.recv(10 * 1024).decode()
     
             if len(data) == 0:
                 self.sock.close()
