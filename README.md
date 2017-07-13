@@ -26,6 +26,8 @@ oocsi = OOCSI('Alice', 'oocsi.example.com')
 # connect OOCSI running on a webserver with a custom port (4545)
 oocsi = OOCSI('Alice', 'oocsi.example.com', 4545)
 ```  
+In case the connection fails, the error will be printed on the Python console. The most common reason that a client fails connecting is because the client's chosen handle is already active on the server. Choosing a slightly different handle will then solve the problem.
+
 
 ### Sending messages (asynchronous)
 
