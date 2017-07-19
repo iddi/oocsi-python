@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="oocsi",
-    version="0.3.1",
+    version="0.3.2",
     description="Python Client for OOCSI",
     author="matsfunk",
     author_email="m.funk@tue.nl",

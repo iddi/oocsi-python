@@ -17,14 +17,20 @@ The first step is to connect to a OOCSI server, either running on the local mach
 ```python
 from oocsi import OOCSI
 
-# connect OOCSI running on the local machine ('localhost')
+# connect to OOCSI running on the local machine ('localhost')
 oocsi = OOCSI('Alice', 'localhost')
 
-# connect OOCSI running on a webserver
+# connect to OOCSI running on a webserver
 oocsi = OOCSI('Alice', 'oocsi.example.com')
 
-# connect OOCSI running on a webserver with a custom port (4545)
+# connect to OOCSI running on a webserver with a custom port (4545)
 oocsi = OOCSI('Alice', 'oocsi.example.com', 4545)
+
+# connect to OOCSI running on the local machine ('localhost') using a newly-generated handle (e.g. OOCSIClient_<unique id>)
+oocsi = OOCSI()
+# print the handle that was generated
+print(oocsi.handle)
+
 ```  
 In case the connection fails, the error will be printed on the Python console. The most common reason that a client fails connecting is because the client's chosen handle is already active on the server. Choosing a slightly different handle will then solve the problem.
 
@@ -63,8 +69,8 @@ from oocsi import OOCSI
 def handleColorEvent(sender, recipient, event):
   print(event['color'])
 
-# connect 
-oocsi = OOCSI('Alice', 'localhost')
+# connect to OOCSI running on the local machine ('localhost')
+oocsi = OOCSI()
 
 # subscribe to channel testchannel with a callback handleColorEvent
 oocsi.subscribe('testchannel', handleColorEvent)
@@ -81,8 +87,8 @@ OOCSI can work with variables that are automatically synchronized over channels 
 ```python
 from oocsi import OOCSI
 
-# connect 
-oocsi = OOCSI('Alice', 'localhost')
+# connect to OOCSI running on the local machine ('localhost')
+oocsi = OOCSI()
 
 # subscribe to channel testchannel with a callback handleColorEvent
 color = oocsi.variable('colorchannel', 'color')

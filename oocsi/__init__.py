@@ -13,8 +13,13 @@ __author__ = 'matsfunk'
 
 class OOCSI:
     
-    def __init__(self, handle, host='localhost', port=4444, callback=None):
-        self.receivers = {handle: [callback]}
+    def __init__(self, handle=None, host='localhost', port=4444, callback=None):
+        if handle == None or len(handle.strip()) == 0:
+            self.handle = "OOCSIClient_" + uuid.uuid4().__str__().replace('-', '')[0:15];
+        else:
+            self.handle = handle
+            
+        self.receivers = {self.handle: [callback]}
         self.calls = {}
         self.services = {}
         self.reconnect = True
@@ -22,7 +27,6 @@ class OOCSI:
         
         # Connect the socket to the port where the server is listening
         self.server_address = (host, port)
-        self.handle = handle
         self.log('connecting to %s port %s' % self.server_address)
         
         # start the connection thread        
@@ -69,7 +73,10 @@ class OOCSI:
         print('[{0}]: {1}'.format(self.handle, message))
         
     def internalSend(self, msg):
-        self.sock.sendall((msg + '\n').encode())
+        try:
+            self.sock.sendall((msg + '\n').encode())
+        except:
+            self.connected = False
 
     def loop(self):
         try:
