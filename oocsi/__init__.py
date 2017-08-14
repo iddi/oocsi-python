@@ -7,6 +7,7 @@ import socket
 import threading
 import time
 import uuid
+from math import fsum 
 
 __author__ = 'matsfunk'
 
@@ -213,20 +214,64 @@ class OOCSICall:
         
 
 class OOCSIVariable(object):
+
     def __init__(self, oocsi, channelName, key):
         self.key = key
         self.channel = channelName
         oocsi.subscribe(channelName, self.internalReceiveValue)
         self.oocsi = oocsi
         self.value = None 
+        self.windowLength = 0
+        self.values = []
+        self.minvalue = None
+        self.maxvalue = None
+
     def get(self):
-        return self.value
+        if self.windowLength > 0 and len(self.values) > 0:
+            return fsum(self.values)/self.windowLength
+        else:
+            return self.value
+
     def set(self, value):
-        self.value = value
+        tempvalue = value
+        if not self.minvalue == None and tempvalue < self.minvalue:
+            tempvalue = self.minvalue
+        if not self.maxvalue == None and tempvalue > self.maxvalue:
+            tempvalue = self.maxvalue
+        if self.windowLength > 0:
+            self.values.append(tempvalue)
+            self.values = self.values[-self.windowLength:]
+        else:
+            self.value = tempvalue
         self.oocsi.send(self.channel, {self.key: value})
+
     def internalReceiveValue(self, sender, recipient, data):
         if self.key in data:
-            self.value = data[self.key]
+            tempvalue = data[self.key]
+            if not self.minvalue == None and tempvalue < self.minvalue:
+                tempvalue = self.minvalue
+            if not self.maxvalue == None and tempvalue > self.maxvalue:
+                tempvalue = self.maxvalue
 
+            if self.windowLength > 0:
+                self.values.append(tempvalue)
+                self.values = self.values[-self.windowLength:]
+            else:
+                self.value = tempvalue
 
+    def smooth(self, windowLength):
+        self.windowLength = windowLength
+        return self
         
+    def min(self, minvalue):
+        self.minvalue = minvalue
+        if self.value < self.minvalue:
+            self.value = self.minvalue
+        return self
+        
+    def max(self, maxvalue):
+        self.maxvalue = maxvalue
+        if self.value > self.maxvalue:
+            self.value = self.maxvalue
+        return self
+    
