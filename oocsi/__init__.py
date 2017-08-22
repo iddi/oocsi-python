@@ -70,6 +70,12 @@ class OOCSI:
         except: 
             {}
     
+    def __enter__(self):
+        return self
+    
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.stop()
+
     def log(self, message):
         print('[{0}]: {1}'.format(self.handle, message))
         
@@ -225,10 +231,11 @@ class OOCSIVariable(object):
         self.values = []
         self.minvalue = None
         self.maxvalue = None
+        self.sigma = None
 
     def get(self):
         if self.windowLength > 0 and len(self.values) > 0:
-            return fsum(self.values)/self.windowLength
+            return fsum(self.values)/float(len(self.values))
         else:
             return self.value
 
@@ -238,6 +245,15 @@ class OOCSIVariable(object):
             tempvalue = self.minvalue
         if not self.maxvalue == None and tempvalue > self.maxvalue:
             tempvalue = self.maxvalue
+        if not self.sigma == None:
+            mean = self.get()
+            if not mean == None:
+                if abs(mean - tempvalue) > self.sigma:
+                    if mean - tempvalue > 0:
+                        tempvalue = mean - self.sigma/float(len(self.values)) 
+                    else:
+                        tempvalue = mean + self.sigma/float(len(self.values))
+
         if self.windowLength > 0:
             self.values.append(tempvalue)
             self.values = self.values[-self.windowLength:]
@@ -252,6 +268,14 @@ class OOCSIVariable(object):
                 tempvalue = self.minvalue
             if not self.maxvalue == None and tempvalue > self.maxvalue:
                 tempvalue = self.maxvalue
+            if not self.sigma == None:
+                mean = self.get()
+                if not mean == None:
+                    if abs(mean - tempvalue) > self.sigma:
+                        if mean - tempvalue > 0:
+                            tempvalue = mean - self.sigma/float(len(self.values))
+                        else:
+                            tempvalue = mean + self.sigma/float(len(self.values))
 
             if self.windowLength > 0:
                 self.values.append(tempvalue)
@@ -259,10 +283,6 @@ class OOCSIVariable(object):
             else:
                 self.value = tempvalue
 
-    def smooth(self, windowLength):
-        self.windowLength = windowLength
-        return self
-        
     def min(self, minvalue):
         self.minvalue = minvalue
         if self.value < self.minvalue:
@@ -275,3 +295,8 @@ class OOCSIVariable(object):
             self.value = self.maxvalue
         return self
     
+    def smooth(self, windowLength, sigma=None):
+        self.windowLength = windowLength
+        self.sigma = sigma
+        return self
+        
