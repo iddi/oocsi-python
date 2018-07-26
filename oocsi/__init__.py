@@ -56,10 +56,9 @@ class OOCSI:
                     for channelName in self.receivers:
                         self.internalSend('subscribe {0}'.format(channelName))
                     self.connected = True
-                else:
-                    if data.startswith('error'):
-                        self.log(data)
-                        self.reconnect = False
+                elif data.startswith('error'):
+                    self.log(data)
+                    self.reconnect = False
     
                 while self.connected:
                     self.loop()
@@ -87,14 +86,14 @@ class OOCSI:
 
     def loop(self):
         try:
-            data = self.sock.recv(10 * 1024).decode()
+            data = self.sock.recv(4 * 1024 * 1024).decode()
     
             if len(data) == 0:
                 self.sock.close()
                 self.connected = False
-            if data.startswith('ping'):
+            elif data.startswith('ping'):
                 self.internalSend('.')
-            if data.startswith('{'):
+            elif data.startswith('{'):
                 self.receive(json.loads(data))
         except :
             {}
@@ -133,8 +132,6 @@ class OOCSI:
                     
             else:
                 self.receiveChannelEvent(sender, recipient, event)
-#         else:
-#             print('not good -------------- ', filteredEvent)
 
     def receiveChannelEvent(self, sender, recipient, event):
         if recipient in self.receivers and self.receivers[recipient] != None:
@@ -243,9 +240,9 @@ class OOCSIVariable(object):
         tempvalue = value
         if not self.minvalue == None and tempvalue < self.minvalue:
             tempvalue = self.minvalue
-        if not self.maxvalue == None and tempvalue > self.maxvalue:
+        elif not self.maxvalue == None and tempvalue > self.maxvalue:
             tempvalue = self.maxvalue
-        if not self.sigma == None:
+        elif not self.sigma == None:
             mean = self.get()
             if not mean == None:
                 if abs(mean - tempvalue) > self.sigma:
@@ -266,9 +263,9 @@ class OOCSIVariable(object):
             tempvalue = data[self.key]
             if not self.minvalue == None and tempvalue < self.minvalue:
                 tempvalue = self.minvalue
-            if not self.maxvalue == None and tempvalue > self.maxvalue:
+            elif not self.maxvalue == None and tempvalue > self.maxvalue:
                 tempvalue = self.maxvalue
-            if not self.sigma == None:
+            elif not self.sigma == None:
                 mean = self.get()
                 if not mean == None:
                     if abs(mean - tempvalue) > self.sigma:
