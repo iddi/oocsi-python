@@ -15,7 +15,7 @@ __author__ = 'matsfunk'
 class OOCSI:
     
     def __init__(self, handle=None, host='localhost', port=4444, callback=None):
-        if handle == None or len(handle.strip()) == 0:
+        if handle is None or len(handle.strip()) == 0:
             self.handle = "OOCSIClient_" + uuid.uuid4().__str__().replace('-', '')[0:15];
         else:
             self.handle = handle
@@ -238,13 +238,13 @@ class OOCSIVariable(object):
 
     def set(self, value):
         tempvalue = value
-        if not self.minvalue == None and tempvalue < self.minvalue:
+        if not self.minvalue is None and tempvalue < self.minvalue:
             tempvalue = self.minvalue
-        elif not self.maxvalue == None and tempvalue > self.maxvalue:
+        elif not self.maxvalue is None and tempvalue > self.maxvalue:
             tempvalue = self.maxvalue
-        elif not self.sigma == None:
+        elif not self.sigma is None:
             mean = self.get()
-            if not mean == None:
+            if not mean is None:
                 if abs(mean - tempvalue) > self.sigma:
                     if mean - tempvalue > 0:
                         tempvalue = mean - self.sigma/float(len(self.values)) 
@@ -261,13 +261,13 @@ class OOCSIVariable(object):
     def internalReceiveValue(self, sender, recipient, data):
         if self.key in data:
             tempvalue = data[self.key]
-            if not self.minvalue == None and tempvalue < self.minvalue:
+            if not self.minvalue is None and tempvalue < self.minvalue:
                 tempvalue = self.minvalue
-            elif not self.maxvalue == None and tempvalue > self.maxvalue:
+            elif not self.maxvalue is None and tempvalue > self.maxvalue:
                 tempvalue = self.maxvalue
-            elif not self.sigma == None:
+            elif not self.sigma is None:
                 mean = self.get()
-                if not mean == None:
+                if not mean is None:
                     if abs(mean - tempvalue) > self.sigma:
                         if mean - tempvalue > 0:
                             tempvalue = mean - self.sigma/float(len(self.values))
