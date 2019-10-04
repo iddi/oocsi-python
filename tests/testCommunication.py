@@ -65,6 +65,43 @@ class TestOOCSICommunication(unittest.TestCase):
         o2.stop()
 
 
+    def testChannelCommunicationBurst(self):
+        
+        eventSink = []
+        eventSink2 = []
+        
+        def receiveEvent(sender, recipient, event):
+            eventSink.append(event)
+        def receiveEvent2(sender, recipient, event):
+            eventSink2.append(event)
+        
+        o11 = OOCSI()
+        o11.subscribe('testchannel', receiveEvent)
+        o11.subscribe('OOCSI_events', receiveEvent2)
+        o12 = OOCSI()
+        o12.subscribe('testchannel', receiveEvent)
+        o12.subscribe('OOCSI_events', receiveEvent2)
+        o13 = OOCSI()
+        o13.subscribe('testchannel', receiveEvent)
+        o13.subscribe('OOCSI_events', receiveEvent2)
+
+        o2 = OOCSI()
+        
+        message = {}
+        message['burst'] = int(400)
+        o2.send('testchannel', message)
+
+        time.sleep(0.5)
+
+        self.assertEquals(3, len(eventSink2))
+        self.assertEquals(3, len(eventSink))
+
+        o11.stop()
+        o12.stop()
+        o13.stop()
+        o2.stop()
+
+
     def testDirectCommunication(self):
         
         eventSink = []

@@ -87,17 +87,17 @@ class OOCSI:
     def loop(self):
         try:
             data = self.sock.recv(4 * 1024 * 1024).decode()
-    
-            if len(data) == 0:
-                self.sock.close()
-                self.connected = False
-            elif data.startswith('ping'):
-                self.internalSend('.')
-            elif data.startswith('{'):
-                self.receive(json.loads(data))
-        except :
-            {}
-
+            lines = data.split("\n")
+            for line in lines:
+                if len(data) == 0:
+                    self.sock.close()
+                    self.connected = False
+                elif line.startswith('ping'):
+                    self.internalSend('.')
+                elif line.startswith('{'):
+                    self.receive(json.loads(line))
+        except:
+            pass
 
     def receive(self, event):
         sender = event['sender']
