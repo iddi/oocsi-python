@@ -190,7 +190,6 @@ class OOCSI:
         {}
 
 class OOCSIThread(threading.Thread):
-
     def __init__(self, parent=None):
         self.parent = parent
         super(OOCSIThread, self).__init__()
@@ -201,7 +200,7 @@ class OOCSIThread(threading.Thread):
             if self.parent.reconnect:
                 self.parent.log('re-connecting to OOCSI')
                 time.sleep(5)
-                raise OOCSIDisconnect('Oocsi has not been found')
+            raise OOCSIDisconnect('Oocsi has not been found')
 
         self.parent.log('closing connection to OOCSI')
 
