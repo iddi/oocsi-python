@@ -105,6 +105,38 @@ color.get()
 This mechanism is shown more detail in the [variables](examples/variables.py) example. In the OOCSI Python client, variables do not have different types such as int, float or string. Therefore, checking the content of the variable might be advisable before using it.  
  
 
+## Custom logging
+You can configure how this library prints its log messages on the Python console. For example, if you are using a log framework, or simply because you would like a different log format (including a timestamp and other information).
+
+```python
+from oocsi import OOCSI
+
+# use this function to change how the log output is printed
+# you can also switch logging off by providing a function that does not do anything
+def logFunction(msg):
+    print('custom log: ' + msg)
+
+# initialize OOCSI connection with a custom logger
+oocsi = OOCSI('python_custom_logger', 'localhost', logger=logFunction)
+
+```
+
+This is also available in the [customLogger](examples/customLogger.py) example.
+
+
+## Limit reconnection attempts
+The OOCSI client will try to _reconnect_ to the OOCSI server if the connection drops for some reason. That's usually the expected behavior, but sometimes you want to reconnect only for several times and then let the OOCSI client fail, so can try something else or alert a user about the connection issue. No problem, just configure the OOCSI with a maximum number of reconnection attempts:
+
+```python
+from oocsi import OOCSI
+
+# initialize OOCSI connection with a maximum number of reconnection attempts, here 10
+oocsi = OOCSI('python_custom_reconnection', 'localhost', maxReconnectionAttempts=10)
+
+```
+
+This is also available in the [customReconnection](examples/customReconnection.py) example.
+
 
 ## Limitations
 At the moment, a subset of functionality that is available in the OOCSI Java implementation is implemented for Python. Beyond the basic communication framework, higher level functions like synchronization, negotiation etc are yet to be implemented.

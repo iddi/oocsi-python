@@ -1,4 +1,4 @@
-# Copyright (c) 2017 Mathias Funk
+# Copyright (c) 2017-2021 Mathias Funk
 # This software is released under the MIT License.
 # http://opensource.org/licenses/mit-license.php
 
@@ -9,12 +9,9 @@ import time
 import uuid
 from math import fsum 
 
-__author__ = 'matsfunk'
-
-
 class OOCSI:
-
-    def __init__(self, handle=None, host='localhost', port=4444, callback=None):
+    
+    def __init__(self, handle=None, host='localhost', port=4444, callback=None, logger=None, maxReconnectionAttempts=100000):
         if handle is None or len(handle.strip()) == 0:
             self.handle = "OOCSIClient_" + uuid.uuid4().__str__().replace('-', '')[0:15];
         else:
@@ -24,7 +21,10 @@ class OOCSI:
         self.calls = {}
         self.services = {}
         self.reconnect = True
+        self.maxReconnects = maxReconnectionAttempts
         self.connected = False
+        if logger is not None:
+            self.log = logger
         
         # Connect the socket to the port where the server is listening
         self.server_address = (host, port)
@@ -40,6 +40,7 @@ class OOCSI:
             {}
         
     def init(self):
+        connectionSuccessful = False
         try:
             # Create a TCP/IP socket        
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -52,6 +53,7 @@ class OOCSI:
             
                 data = self.sock.recv(1024).decode()
                 if data.startswith('{'):  
+                    connectionSuccessful = True
                     self.log('connection established')
                     # re-subscribe for channels
                     for channelName in self.receivers:
@@ -63,12 +65,13 @@ class OOCSI:
     
                 while self.connected:
                     self.loop()
-        
+
             finally:
-                {}
-        
+                pass
         except: 
-            {}
+            pass
+            
+        return connectionSuccessful
     
     def __enter__(self):
         return self
@@ -197,18 +200,27 @@ class OOCSIThread(threading.Thread):
         super(OOCSIThread, self).__init__()
 
     def run(self):
-        while self.parent.reconnect:
-            self.parent.init()
-            if self.parent.reconnect:
+        failedConnectionAttempts = 0
+        self.parent.init()
+        if self.parent.reconnect:
+            while self.parent.reconnect:
                 self.parent.log('re-connecting to OOCSI')
+                if self.parent.init():
+                    failedConnectionAttempts = 0
+                else:
+                    failedConnectionAttempts += 1
                 time.sleep(5)
-            raise OOCSIDisconnect('Oocsi has not been found')
+                # raise exception after unsuccessful connection attempts
+                if failedConnectionAttempts == self.parent.maxReconnects:
+                    self.parent.log('OOCSI connection failed after 10 attempts')
+                    raise OOCSIDisconnect('OOCSI has not been found')
 
         self.parent.log('closing connection to OOCSI')
 
-    def __stop(self):
+    def _stop(self):
         self.parent.stop()
-        return threading.Thread.__stop(self) 
+        return threading.Thread._stop(self) 
+
 
 class OOCSIDisconnect(Exception):
     pass
