@@ -13,7 +13,7 @@ __author__ = 'matsfunk'
 
 
 class OOCSI:
-    
+
     def __init__(self, handle=None, host='localhost', port=4444, callback=None):
         if handle is None or len(handle.strip()) == 0:
             self.handle = "OOCSIClient_" + uuid.uuid4().__str__().replace('-', '')[0:15];
@@ -33,6 +33,7 @@ class OOCSI:
         # start the connection thread        
         self.runtime = OOCSIThread(self)
         self.runtime.start()
+
         
         # block till we are connected
         while not self.connected:
@@ -188,6 +189,90 @@ class OOCSI:
 
     def handleEvent(self, sender, receiver, message):
         {}
+
+    
+class heyoocsi():
+    def __init__(self, OOCSI, prototype_name) -> None:
+        self._prototype_name = prototype_name
+        self._prototype = {self._prototype_name:{}}
+        self._prototype[self._prototype_name]["properties"] = {}
+        self._prototype[self._prototype_name]["components"] = {}
+        self._prototype[self._prototype_name]["location"] = {}
+        self._components = self._prototype[self._prototype_name]["components"]
+        self._oocsi=OOCSI
+        self._oocsi.log(f'Created {prototype_name}.')
+
+    def add_property(self, properties, propertyValue):
+        self._prototype[self._prototype_name]["properties"][properties] = propertyValue
+        self._oocsi.log(f'Added {properties} to the properties list.')
+    
+    def add_location(self, location_name, latitude, longitude):
+        self._prototype[self._prototype_name]["location"][location_name] = [latitude, longitude]
+        self._oocsi.log(f'Added {location_name} to the locations list.')
+
+    def add_sensor(self, sensor_name, sensor_channel, sensor_type, sensor_unit, sensor_default, icon=None):
+        self._components[sensor_name]={}
+        self._components[sensor_name]["channel_name"] = sensor_channel
+        self._components[sensor_name]["type"] = "sensor"
+        self._components[sensor_name]["sensor_type"] = sensor_type
+        self._components[sensor_name]["unit"] = sensor_unit
+        self._components[sensor_name]["value"] = sensor_default
+        self._components[sensor_name]["icon"] = icon
+        self._prototype[self._prototype_name]["components"] | self._components[sensor_name]
+        self._oocsi.log(f'Added {sensor_name} to the components list.')
+
+    def add_number(self, number_name,number_channel, number_min_max, number_unit, number_default, icon=None):
+        self._components[number_name]={}
+        self._components[number_name]["channel_name"] = number_channel
+        self._components[number_name]["min_max"]= number_min_max
+        self._components[number_name]["type"] = "number"
+        self._components[number_name]["unit"] = number_unit
+        self._components[number_name]["value"] = number_default
+        self._components[number_name]["icon"] = icon
+        self._prototype[self._prototype_name]["components"] | self._components[number_name]
+        self._oocsi.log(f'Added {number_name} to the components list.')
+
+    def add_binary_sensor(self, sensor_name, sensor_channel, sensor_type, sensor_default=False, icon=None):
+        self._components[sensor_name]={}
+        self._components[sensor_name]["channel_name"] = sensor_channel
+        self._components[sensor_name]["type"] = "binary_sensor"
+        self._components[sensor_name]["sensor_type"] = sensor_type
+        self._components[sensor_name]["state"] = sensor_default
+        self._components[sensor_name]["icon"] = icon
+        self._prototype[self._prototype_name]["components"] | self._components[sensor_name]
+        self._oocsi.log(f'Added {sensor_name} to the components list.')
+
+    def add_switch(self, switch_name, switch_channel, switch_type, switch_default=False,icon=None):
+        self._components[switch_name]={}
+        self._components[switch_name]["channel_name"] = switch_channel
+        self._components[switch_name]["type"] = "switch"
+        self._components[switch_name]["sensor_type"] = switch_type
+        self._components[switch_name]["state"] = switch_default
+        self._components[switch_name]["icon"] = icon
+        self._prototype[self._prototype_name]["components"] | self._components[switch_name]
+        self._oocsi.log(f'Added {switch_name} to the components list.')
+
+    def add_light(self, light_name,light_channel, led_type, spectrum, light_default_state=False, light_default_brightness=0, mired_min_max=None, icon=None):
+        self._components[light_name]={}
+        self._components[light_name]["channel_name"] = light_channel
+        self._components[light_name]["min_max"]= mired_min_max
+        self._components[light_name]["type"] = "light"
+        self._components[light_name]["ledType"] = led_type
+        self._components[light_name]["spectrum"] = spectrum
+        self._components[light_name]["state"] = light_default_state
+        self._components[light_name]["brightness"] = light_default_brightness
+        self._components[light_name]["icon"] = icon
+        self._prototype[self._prototype_name]["components"] | self._components[light_name]
+        self._oocsi.log(f'Added {light_name} to the components list.')
+    
+    def send(self):
+        data = self._prototype
+        self._oocsi.internalSend('sendraw {0} {1}'.format("heyOOCSI!", json.dumps(data))) 
+        self._oocsi.log("Sent heyOOCSI! message.")       
+
+
+        
+
 
 class OOCSIThread(threading.Thread):
     def __init__(self, parent=None):
