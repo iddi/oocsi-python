@@ -1,18 +1,21 @@
-import sys
-sys.path.append('oocsi')
 from oocsi import OOCSI, heyoocsi
 import time
-import importlib.util
 from random import random
 
-# dictionary sender
-o = OOCSI('testsender', '192.168.137.122')
+# oocsiConnection
+o = OOCSI('testsender', 'localhost')
 
-# dictionary
-prototype = heyoocsi(o,"myfirstprototype")
+# oocsiDevice
+# easy approach:
+prototype = o.heyOOCSI()
 
-# dictionary creator
+# hard approach:
+# prototype = heyoocsi(o,"myfirstprototype")
+# (for multiple digital oocsiDevices)
+
+# oocsiEntities for the prototype:
 prototype.add_binary_sensor("sensor_name", "sensor_channel", "sensor_type", "sensor_default")
+prototype.add_binary_sensor("sensor_name2", "sensor_channel2", "sensor_type", "sensor_default")
 prototype.add_switch("switchname", "sensor_channel", "switch", "false","lightbulb")
 prototype.send()
 

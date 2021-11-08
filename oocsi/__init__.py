@@ -193,6 +193,11 @@ class OOCSI:
     def handleEvent(self, sender, receiver, message):
         {}
 
+    def heyOOCSI(self):
+        return (heyoocsi(self, self.handle))
+
+    
+
 
 class OOCSIThread(threading.Thread):
     def __init__(self, parent=None):
