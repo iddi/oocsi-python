@@ -333,7 +333,7 @@ class heyoocsi():
         self._prototype[self._prototype_name]["location"][location_name] = [latitude, longitude]
         self._oocsi.log(f'Added {location_name} to the locations list.')
 
-    def add_sensor(self, sensor_name, sensor_channel, sensor_type, sensor_unit, sensor_default, icon=None):
+    def add_sensor_brick(self, sensor_name, sensor_channel, sensor_type, sensor_unit, sensor_default, icon=None):
         self._components[sensor_name]={}
         self._components[sensor_name]["channel_name"] = sensor_channel
         self._components[sensor_name]["type"] = "sensor"
@@ -344,7 +344,7 @@ class heyoocsi():
         self._prototype[self._prototype_name]["components"] | self._components[sensor_name]
         self._oocsi.log(f'Added {sensor_name} to the components list.')
 
-    def add_number(self, number_name,number_channel, number_min_max, number_unit, number_default, icon=None):
+    def add_number_brick(self, number_name,number_channel, number_min_max, number_unit, number_default, icon=None):
         self._components[number_name]={}
         self._components[number_name]["channel_name"] = number_channel
         self._components[number_name]["min_max"]= number_min_max
@@ -355,7 +355,7 @@ class heyoocsi():
         self._prototype[self._prototype_name]["components"] | self._components[number_name]
         self._oocsi.log(f'Added {number_name} to the components list.')
 
-    def add_binary_sensor(self, sensor_name, sensor_channel, sensor_type, sensor_default=False, icon=None):
+    def add_binary_sensor_brick(self, sensor_name, sensor_channel, sensor_type, sensor_default=False, icon=None):
         self._components[sensor_name]={}
         self._components[sensor_name]["channel_name"] = sensor_channel
         self._components[sensor_name]["type"] = "binary_sensor"
@@ -365,7 +365,7 @@ class heyoocsi():
         self._prototype[self._prototype_name]["components"] | self._components[sensor_name]
         self._oocsi.log(f'Added {sensor_name} to the components list.')
 
-    def add_switch(self, switch_name, switch_channel, switch_type, switch_default=False,icon=None):
+    def add_switch_brick(self, switch_name, switch_channel, switch_type, switch_default=False,icon=None):
         self._components[switch_name]={}
         self._components[switch_name]["channel_name"] = switch_channel
         self._components[switch_name]["type"] = "switch"
@@ -375,7 +375,7 @@ class heyoocsi():
         self._prototype[self._prototype_name]["components"] | self._components[switch_name]
         self._oocsi.log(f'Added {switch_name} to the components list.')
 
-    def add_light(self, light_name,light_channel, led_type, spectrum, light_default_state=False, light_default_brightness=0, mired_min_max=None, icon=None):
+    def add_light_brick(self, light_name,light_channel, led_type, spectrum, light_default_state=False, light_default_brightness=0, mired_min_max=None, icon=None):
         self._components[light_name]={}
         self._components[light_name]["channel_name"] = light_channel
         self._components[light_name]["min_max"]= mired_min_max
@@ -388,7 +388,9 @@ class heyoocsi():
         self._prototype[self._prototype_name]["components"] | self._components[light_name]
         self._oocsi.log(f'Added {light_name} to the components list.')
     
-    def send(self):
+    def submit(self):
         data = self._prototype
         self._oocsi.internalSend('sendraw {0} {1}'.format("heyOOCSI!", json.dumps(data))) 
-        self._oocsi.log("Sent heyOOCSI! message.")       
+        self._oocsi.log("Sent heyOOCSI! message.")
+    
+    sayHi = submit
