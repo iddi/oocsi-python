@@ -10,7 +10,6 @@ import uuid
 from math import fsum 
 
 class OOCSI:
-    
     def __init__(self, handle=None, host='localhost', port=4444, callback=None, logger=None, maxReconnectionAttempts=100000):
         if handle is None or len(handle.strip()) == 0:
             self.handle = "OOCSIClient_" + uuid.uuid4().__str__().replace('-', '')[0:15];
@@ -193,10 +192,12 @@ class OOCSI:
     def handleEvent(self, sender, receiver, message):
         {}
 
-    def heyOOCSI(self):
-        return (heyoocsi(self, self.handle))
+    def heyOOCSI(self, custom_name=None):
+        if custom_name is None:
+            return (OOCSIDevice(self, self.handle))
+        else:            
+            return (OOCSIDevice(self, custom_name))
 
-    
 
 
 class OOCSIThread(threading.Thread):
@@ -227,19 +228,20 @@ class OOCSIThread(threading.Thread):
         return threading.Thread._stop(self) 
 
 
+
 class OOCSIDisconnect(Exception):
     pass
 
 
+
 class OOCSICall:
-    
     def __init__(self, parent=None):
         self.uuid = uuid.uuid4()
         self.expiration = time.time()
-        
+
+
 
 class OOCSIVariable(object):
-
     def __init__(self, oocsi, channelName, key):
         self.key = key
         self.channel = channelName
@@ -318,25 +320,29 @@ class OOCSIVariable(object):
         self.windowLength = windowLength
         self.sigma = sigma
         return self
-        
-class heyoocsi():
-    def __init__(self, OOCSI, prototype_name) -> None:
-        self._prototype_name = prototype_name
-        self._prototype = {self._prototype_name:{}}
-        self._prototype[self._prototype_name]["properties"] = {}
-        self._prototype[self._prototype_name]["components"] = {}
-        self._prototype[self._prototype_name]["location"] = {}
-        self._components = self._prototype[self._prototype_name]["components"]
+
+
+
+class OOCSIDevice():
+    def __init__(self, OOCSI, device_name) -> None:
+        self._device_name = device_name
+        self._device = {self._device_name:{}}
+        self._device[self._device_name]["properties"] = {}
+        self._device[self._device_name]["components"] = {}
+        self._device[self._device_name]["location"] = {}
+        self._components = self._device[self._device_name]["components"]
         self._oocsi=OOCSI
-        self._oocsi.log(f'Created {prototype_name}.')
+        self._oocsi.log(f'Created device {self._device_name}.')
 
     def add_property(self, properties, propertyValue):
-        self._prototype[self._prototype_name]["properties"][properties] = propertyValue
-        self._oocsi.log(f'Added {properties} to the properties list.')
+        self._device[self._device_name]["properties"][properties] = propertyValue
+        self._oocsi.log(f'Added {properties} to the properties list of device {self._device_name}.')
+        return self
     
     def add_location(self, location_name, latitude, longitude):
-        self._prototype[self._prototype_name]["location"][location_name] = [latitude, longitude]
-        self._oocsi.log(f'Added {location_name} to the locations list.')
+        self._device[self._device_name]["location"][location_name] = [latitude, longitude]
+        self._oocsi.log(f'Added {location_name} to the locations list of device {self._device_name}.')
+        return self
 
     def add_sensor_brick(self, sensor_name, sensor_channel, sensor_type, sensor_unit, sensor_default, icon=None):
         self._components[sensor_name]={}
@@ -346,10 +352,11 @@ class heyoocsi():
         self._components[sensor_name]["unit"] = sensor_unit
         self._components[sensor_name]["value"] = sensor_default
         self._components[sensor_name]["icon"] = icon
-        self._prototype[self._prototype_name]["components"] | self._components[sensor_name]
-        self._oocsi.log(f'Added {sensor_name} to the components list.')
+        self._device[self._device_name]["components"] | self._components[sensor_name]
+        self._oocsi.log(f'Added {sensor_name} to the components list of device {self._device_name}.')
+        return self
 
-    def add_number_brick(self, number_name,number_channel, number_min_max, number_unit, number_default, icon=None):
+    def add_number_brick(self, number_name, number_channel, number_min_max, number_unit, number_default, icon=None):
         self._components[number_name]={}
         self._components[number_name]["channel_name"] = number_channel
         self._components[number_name]["min_max"]= number_min_max
@@ -357,8 +364,9 @@ class heyoocsi():
         self._components[number_name]["unit"] = number_unit
         self._components[number_name]["value"] = number_default
         self._components[number_name]["icon"] = icon
-        self._prototype[self._prototype_name]["components"] | self._components[number_name]
-        self._oocsi.log(f'Added {number_name} to the components list.')
+        self._device[self._device_name]["components"] | self._components[number_name]
+        self._oocsi.log(f'Added {number_name} to the components list of device {self._device_name}.')
+        return self
 
     def add_binary_sensor_brick(self, sensor_name, sensor_channel, sensor_type, sensor_default=False, icon=None):
         self._components[sensor_name]={}
@@ -367,20 +375,22 @@ class heyoocsi():
         self._components[sensor_name]["sensor_type"] = sensor_type
         self._components[sensor_name]["state"] = sensor_default
         self._components[sensor_name]["icon"] = icon
-        self._prototype[self._prototype_name]["components"] | self._components[sensor_name]
-        self._oocsi.log(f'Added {sensor_name} to the components list.')
+        self._device[self._device_name]["components"] | self._components[sensor_name]
+        self._oocsi.log(f'Added {sensor_name} to the components list of device {self._device_name}.')
+        return self
 
-    def add_switch_brick(self, switch_name, switch_channel, switch_type, switch_default=False,icon=None):
+    def add_switch_brick(self, switch_name, switch_channel, switch_type, switch_default=False, icon=None):
         self._components[switch_name]={}
         self._components[switch_name]["channel_name"] = switch_channel
         self._components[switch_name]["type"] = "switch"
         self._components[switch_name]["sensor_type"] = switch_type
         self._components[switch_name]["state"] = switch_default
         self._components[switch_name]["icon"] = icon
-        self._prototype[self._prototype_name]["components"] | self._components[switch_name]
-        self._oocsi.log(f'Added {switch_name} to the components list.')
+        self._device[self._device_name]["components"] | self._components[switch_name]
+        self._oocsi.log(f'Added {switch_name} to the components list of device {self._device_name}.')
+        return self
 
-    def add_light_brick(self, light_name,light_channel, led_type, spectrum, light_default_state=False, light_default_brightness=0, mired_min_max=None, icon=None):
+    def add_light_brick(self, light_name, light_channel, led_type, spectrum, light_default_state=False, light_default_brightness=0, mired_min_max=None, icon=None):
         self._components[light_name]={}
         self._components[light_name]["channel_name"] = light_channel
         self._components[light_name]["min_max"]= mired_min_max
@@ -390,12 +400,15 @@ class heyoocsi():
         self._components[light_name]["state"] = light_default_state
         self._components[light_name]["brightness"] = light_default_brightness
         self._components[light_name]["icon"] = icon
-        self._prototype[self._prototype_name]["components"] | self._components[light_name]
-        self._oocsi.log(f'Added {light_name} to the components list.')
+        self._device[self._device_name]["components"] | self._components[light_name]
+        self._oocsi.log(f'Added {light_name} to the components list of device {self._device_name}.')
+        return self
     
     def submit(self):
-        data = self._prototype
+        data = self._device
         self._oocsi.internalSend('sendraw {0} {1}'.format("heyOOCSI!", json.dumps(data))) 
-        self._oocsi.log("Sent heyOOCSI! message.")
+        self._oocsi.log("Sent heyOOCSI! message for device {self._device_name}.")
     
-    sayHi = submit
+    def sayHi(self):
+        self.submit()
+        
