@@ -397,6 +397,19 @@ class OOCSIDevice():
         return self
 
     def add_light(self, light_name:str, light_channel:str, led_type:str, spectrum:list[str], light_default_state:bool = False, light_default_brightness:int = 0, mired_min_max:list[int] = None, icon:str = None):
+        SPECTRUM = ["WHITE","CCT","RGB"]
+        LEDTYPE = ["RGB","RGBW","RGBWW","CCT","DIMMABLE","ONOFF"]
+
+        if led_type in LEDTYPE:  
+            if spectrum <= SPECTRUM:
+                self._components[light_name]["spectrum"] = spectrum
+            else:
+                self._oocsi.log(f'error, {light_name} spectrum does not exist.')
+                pass
+        else:
+            self._oocsi.log(f'error, {light_name} ledtype does not exist.')
+            pass
+
         self._components[light_name]={}
         self._components[light_name]["channel_name"] = light_channel
         self._components[light_name]["min_max"]= mired_min_max
