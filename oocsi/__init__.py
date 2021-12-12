@@ -192,11 +192,15 @@ class OOCSI:
     def handleEvent(self, sender, receiver, message):
         {}
 
+    def returnHandle(self):
+        return self.handle
+
     def heyOOCSI(self, custom_name=None):
         if custom_name is None:
             return (OOCSIDevice(self, self.handle))
-        else:            
+        else:
             return (OOCSIDevice(self, custom_name))
+      
 
 
 
@@ -321,42 +325,44 @@ class OOCSIVariable(object):
         self.sigma = sigma
         return self
 
-
-
 class OOCSIDevice():
     def __init__(self, OOCSI, device_name) -> None:
         self._device_name = device_name
+        deviceid =  OOCSI.returnHandle()
         self._device = {self._device_name:{}}
         self._device[self._device_name]["properties"] = {}
+        self._device[self._device_name]["properties"]["device_id"] = deviceid
         self._device[self._device_name]["components"] = {}
         self._device[self._device_name]["location"] = {}
         self._components = self._device[self._device_name]["components"]
         self._oocsi=OOCSI
         self._oocsi.log(f'Created device {self._device_name}.')
 
-    def add_property(self, properties, propertyValue):
+    def add_property(self, properties:str, propertyValue):
         self._device[self._device_name]["properties"][properties] = propertyValue
         self._oocsi.log(f'Added {properties} to the properties list of device {self._device_name}.')
         return self
     
-    def add_location(self, location_name, latitude, longitude):
+    def add_location(self, location_name:str, latitude:float, longitude:float):
         self._device[self._device_name]["location"][location_name] = [latitude, longitude]
         self._oocsi.log(f'Added {location_name} to the locations list of device {self._device_name}.')
         return self
 
-    def add_sensor_brick(self, sensor_name, sensor_channel, sensor_type, sensor_unit, sensor_default, icon=None):
+    def add_sensor(self, sensor_name:str, sensor_channel: str, sensor_type: str, sensor_unit: str, sensor_default: float, mode:str = "auto", step: float = None, icon: str=None):
         self._components[sensor_name]={}
         self._components[sensor_name]["channel_name"] = sensor_channel
         self._components[sensor_name]["type"] = "sensor"
         self._components[sensor_name]["sensor_type"] = sensor_type
         self._components[sensor_name]["unit"] = sensor_unit
         self._components[sensor_name]["value"] = sensor_default
+        self._components[sensor_name]["mode"] = mode
+        self._components[sensor_name]["step"] = step
         self._components[sensor_name]["icon"] = icon
         self._device[self._device_name]["components"] | self._components[sensor_name]
         self._oocsi.log(f'Added {sensor_name} to the components list of device {self._device_name}.')
         return self
 
-    def add_number_brick(self, number_name, number_channel, number_min_max, number_unit, number_default, icon=None):
+    def add_number(self, number_name: str, number_channel:str, number_min_max:list[int], number_unit:str, number_default:float, icon:str=None):
         self._components[number_name]={}
         self._components[number_name]["channel_name"] = number_channel
         self._components[number_name]["min_max"]= number_min_max
@@ -368,7 +374,7 @@ class OOCSIDevice():
         self._oocsi.log(f'Added {number_name} to the components list of device {self._device_name}.')
         return self
 
-    def add_binary_sensor_brick(self, sensor_name, sensor_channel, sensor_type, sensor_default=False, icon=None):
+    def add_binary_sensor(self, sensor_name:str, sensor_channel:str, sensor_type:str, sensor_default:bool=False, icon:str=None):
         self._components[sensor_name]={}
         self._components[sensor_name]["channel_name"] = sensor_channel
         self._components[sensor_name]["type"] = "binary_sensor"
@@ -379,7 +385,7 @@ class OOCSIDevice():
         self._oocsi.log(f'Added {sensor_name} to the components list of device {self._device_name}.')
         return self
 
-    def add_switch_brick(self, switch_name, switch_channel, switch_type, switch_default=False, icon=None):
+    def add_switch(self, switch_name:str, switch_channel:str, switch_type:str, switch_default:bool=False, icon:str=None):
         self._components[switch_name]={}
         self._components[switch_name]["channel_name"] = switch_channel
         self._components[switch_name]["type"] = "switch"
@@ -390,7 +396,20 @@ class OOCSIDevice():
         self._oocsi.log(f'Added {switch_name} to the components list of device {self._device_name}.')
         return self
 
-    def add_light_brick(self, light_name, light_channel, led_type, spectrum, light_default_state=False, light_default_brightness=0, mired_min_max=None, icon=None):
+    def add_light(self, light_name:str, light_channel:str, led_type:str, spectrum:list[str], light_default_state:bool = False, light_default_brightness:int = 0, mired_min_max:list[int] = None, icon:str = None):
+        SPECTRUM = ["WHITE","CCT","RGB"]
+        LEDTYPE = ["RGB","RGBW","RGBWW","CCT","DIMMABLE","ONOFF"]
+
+        if led_type in LEDTYPE:  
+            if spectrum <= SPECTRUM:
+                self._components[light_name]["spectrum"] = spectrum
+            else:
+                self._oocsi.log(f'error, {light_name} spectrum does not exist.')
+                pass
+        else:
+            self._oocsi.log(f'error, {light_name} ledtype does not exist.')
+            pass
+
         self._components[light_name]={}
         self._components[light_name]["channel_name"] = light_channel
         self._components[light_name]["min_max"]= mired_min_max
@@ -407,7 +426,7 @@ class OOCSIDevice():
     def submit(self):
         data = self._device
         self._oocsi.internalSend('sendraw {0} {1}'.format("heyOOCSI!", json.dumps(data))) 
-        self._oocsi.log("Sent heyOOCSI! message for device {self._device_name}.")
+        self._oocsi.log(f'Sent heyOOCSI! message for device {self._device_name}.')
     
     def sayHi(self):
         self.submit()
