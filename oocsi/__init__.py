@@ -343,12 +343,12 @@ class OOCSIDevice():
         self._oocsi.log(f'Added {properties} to the properties list of device {self._device_name}.')
         return self
     
-    def add_location(self, location_name:str, latitude:float, longitude:float):
+    def add_location(self, location_name:str, latitude:float = 0, longitude:float = 0):
         self._device[self._device_name]["location"][location_name] = [latitude, longitude]
         self._oocsi.log(f'Added {location_name} to the locations list of device {self._device_name}.')
         return self
 
-    def add_sensor(self, sensor_name:str, sensor_channel: str, sensor_type: str, sensor_unit: str, sensor_default: float, mode:str = "auto", step: float = None, icon: str=None):
+    def add_sensor(self, sensor_name:str, sensor_channel:str, sensor_type:str, sensor_unit:str, sensor_default:float, mode:str = "auto", step:float = None, icon:str = None):
         self._components[sensor_name]={}
         self._components[sensor_name]["channel_name"] = sensor_channel
         self._components[sensor_name]["type"] = "sensor"
@@ -362,7 +362,7 @@ class OOCSIDevice():
         self._oocsi.log(f'Added {sensor_name} to the components list of device {self._device_name}.')
         return self
 
-    def add_number(self, number_name: str, number_channel:str, number_min_max:list[int], number_unit:str, number_default:float, icon:str=None):
+    def add_number(self, number_name:str, number_channel:str, number_min_max:list[int], number_unit:str, number_default:float, icon:str = None):
         self._components[number_name]={}
         self._components[number_name]["channel_name"] = number_channel
         self._components[number_name]["min_max"]= number_min_max
@@ -374,7 +374,7 @@ class OOCSIDevice():
         self._oocsi.log(f'Added {number_name} to the components list of device {self._device_name}.')
         return self
 
-    def add_binary_sensor(self, sensor_name:str, sensor_channel:str, sensor_type:str, sensor_default:bool=False, icon:str=None):
+    def add_binary_sensor(self, sensor_name:str, sensor_channel:str, sensor_type:str, sensor_default:bool = False, icon:str = None):
         self._components[sensor_name]={}
         self._components[sensor_name]["channel_name"] = sensor_channel
         self._components[sensor_name]["type"] = "binary_sensor"
@@ -385,7 +385,7 @@ class OOCSIDevice():
         self._oocsi.log(f'Added {sensor_name} to the components list of device {self._device_name}.')
         return self
 
-    def add_switch(self, switch_name:str, switch_channel:str, switch_type:str, switch_default:bool=False, icon:str=None):
+    def add_switch(self, switch_name:str, switch_channel:str, switch_type:str, switch_default:bool = False, icon:str = None):
         self._components[switch_name]={}
         self._components[switch_name]["channel_name"] = switch_channel
         self._components[switch_name]["type"] = "switch"
@@ -412,10 +412,10 @@ class OOCSIDevice():
 
         self._components[light_name]={}
         self._components[light_name]["channel_name"] = light_channel
-        self._components[light_name]["min_max"]= mired_min_max
         self._components[light_name]["type"] = "light"
         self._components[light_name]["ledType"] = led_type
         self._components[light_name]["spectrum"] = spectrum
+        self._components[light_name]["min_max"]= mired_min_max
         self._components[light_name]["state"] = light_default_state
         self._components[light_name]["brightness"] = light_default_brightness
         self._components[light_name]["icon"] = icon
