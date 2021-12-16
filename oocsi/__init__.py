@@ -29,16 +29,17 @@ class OOCSI:
         self.server_address = (host, port)
         self.log('connecting to %s port %s' % self.server_address)
         
+        # start the connection
+        # (block till we are connected or connection error/timeout)
+        if not self.connect():
+            self.log('Initial OOCSI connection failed')
+            raise OOCSIDisconnect('OOCSI has not been found')
+        
         # start the connection thread        
         self.runtime = OOCSIThread(self)
         self.runtime.start()
 
-        
-        # block till we are connected
-        while not self.connected:
-            {}
-        
-    def init(self):
+    def connect(self):
         connectionSuccessful = False
         try:
             # Create a TCP/IP socket        
@@ -61,15 +62,10 @@ class OOCSI:
                 elif data.startswith('error'):
                     self.log(data)
                     self.reconnect = False
-    
-                while self.connected:
-                    self.loop()
-
             finally:
                 pass
         except: 
             pass
-            
         return connectionSuccessful
     
     def __enter__(self):
@@ -95,7 +91,7 @@ class OOCSI:
                 if len(data) == 0:
                     self.sock.close()
                     self.connected = False
-                elif line.startswith('ping'):
+                elif line.startswith('ping') or line.startswith('.'):
                     self.internalSend('.')
                 elif line.startswith('{'):
                     self.receive(json.loads(line))
@@ -121,7 +117,6 @@ class OOCSI:
             self.receiveChannelEvent(sender, recipient, event)
         
         else:
-            
             if '_MESSAGE_ID' in event:
                 myCall = self.calls[event['_MESSAGE_ID']]
                 if myCall['expiration'] > time.time():
@@ -200,8 +195,6 @@ class OOCSI:
             return (OOCSIDevice(self, self.handle))
         else:
             return (OOCSIDevice(self, custom_name))
-      
-
 
 
 class OOCSIThread(threading.Thread):
@@ -210,13 +203,19 @@ class OOCSIThread(threading.Thread):
         super(OOCSIThread, self).__init__()
 
     def run(self):
-        failedConnectionAttempts = 0
-        self.parent.init()
+        # run the established connection        
+        while self.parent.connected:
+            self.parent.loop()
+
+        # reconnect
         if self.parent.reconnect:
+            failedConnectionAttempts = 0
             while self.parent.reconnect:
                 self.parent.log('re-connecting to OOCSI')
-                if self.parent.init():
+                if self.parent.connect():
                     failedConnectionAttempts = 0
+                    while self.parent.connected:
+                        self.parent.loop()
                 else:
                     failedConnectionAttempts += 1
                 time.sleep(5)
@@ -326,12 +325,11 @@ class OOCSIVariable(object):
         return self
 
 class OOCSIDevice():
-    def __init__(self, OOCSI, device_name) -> None:
+    def __init__(self, OOCSI, device_name:str) -> None:
         self._device_name = device_name
-        deviceid =  OOCSI.returnHandle()
         self._device = {self._device_name:{}}
         self._device[self._device_name]["properties"] = {}
-        self._device[self._device_name]["properties"]["device_id"] = deviceid
+        self._device[self._device_name]["properties"]["device_id"] = OOCSI.returnHandle()
         self._device[self._device_name]["components"] = {}
         self._device[self._device_name]["location"] = {}
         self._components = self._device[self._device_name]["components"]
@@ -362,7 +360,7 @@ class OOCSIDevice():
         self._oocsi.log(f'Added {sensor_name} to the components list of device {self._device_name}.')
         return self
 
-    def add_number(self, number_name:str, number_channel:str, number_min_max:list[int], number_unit:str, number_default:float, icon:str = None):
+    def add_number(self, number_name:str, number_channel:str, number_min_max, number_unit:str, number_default:float, icon:str = None):
         self._components[number_name]={}
         self._components[number_name]["channel_name"] = number_channel
         self._components[number_name]["min_max"]= number_min_max
@@ -396,7 +394,7 @@ class OOCSIDevice():
         self._oocsi.log(f'Added {switch_name} to the components list of device {self._device_name}.')
         return self
 
-    def add_light(self, light_name:str, light_channel:str, led_type:str, spectrum:list[str], light_default_state:bool = False, light_default_brightness:int = 0, mired_min_max:list[int] = None, icon:str = None):
+    def add_light(self, light_name:str, light_channel:str, led_type:str, spectrum, light_default_state:bool = False, light_default_brightness:int = 0, mired_min_max = None, icon:str = None):
         SPECTRUM = ["WHITE","CCT","RGB"]
         LEDTYPE = ["RGB","RGBW","RGBWW","CCT","DIMMABLE","ONOFF"]
 
