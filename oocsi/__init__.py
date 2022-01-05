@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2021 Mathias Funk
+# Copyright (c) 2017-2022 Mathias Funk
 # This software is released under the MIT License.
 # http://opensource.org/licenses/mit-license.php
 
@@ -385,11 +385,10 @@ class OOCSIDevice():
         self._oocsi.log(f'Added {sensor_name} to the components list of device {self._device_name}.')
         return self
 
-    def addSwitch(self, switch_name:str, switch_channel:str, switch_type:str, switch_default:bool = False, icon:str = None):
+    def addSwitch(self, switch_name:str, switch_channel:str, switch_default:bool = False, icon:str = None):
         self._components[switch_name]={}
         self._components[switch_name]["channel_name"] = switch_channel
         self._components[switch_name]["type"] = "switch"
-        self._components[switch_name]["sensor_type"] = switch_type
         self._components[switch_name]["state"] = switch_default
         self._components[switch_name]["icon"] = icon
         self._device[self._device_name]["components"][switch_name] = self._components[switch_name]
@@ -400,8 +399,9 @@ class OOCSIDevice():
         SPECTRUM = ["WHITE","CCT","RGB"]
         LEDTYPE = ["RGB","RGBW","RGBWW","CCT","DIMMABLE","ONOFF"]
 
+        self._components[light_name]={}
         if led_type in LEDTYPE:  
-            if spectrum <= SPECTRUM:
+            if spectrum in SPECTRUM:
                 self._components[light_name]["spectrum"] = spectrum
             else:
                 self._oocsi.log(f'error, {light_name} spectrum does not exist.')
@@ -410,7 +410,6 @@ class OOCSIDevice():
             self._oocsi.log(f'error, {light_name} ledtype does not exist.')
             pass
 
-        self._components[light_name]={}
         self._components[light_name]["channel_name"] = light_channel
         self._components[light_name]["type"] = "light"
         self._components[light_name]["ledType"] = led_type

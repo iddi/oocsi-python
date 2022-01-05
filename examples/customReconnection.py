@@ -1,3 +1,7 @@
+# Copyright (c) 2017-2022 Mathias Funk
+# This software is released under the MIT License.
+# http://opensource.org/licenses/mit-license.php
+
 from oocsi import OOCSI
 
 # use this function to change how the log output is printed
