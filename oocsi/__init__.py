@@ -5,9 +5,10 @@
 import json
 import socket
 import threading
+import atexit
 import time
 import uuid
-from math import fsum 
+from math import fsum
 
 class OOCSI:
     def __init__(self, handle=None, host='localhost', port=4444, callback=None, logger=None, maxReconnectionAttempts=100000):
@@ -45,6 +46,7 @@ class OOCSI:
             # Create a TCP/IP socket        
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.sock.connect(self.server_address)
+            self.sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
             
             try:
                 # Send data
@@ -203,6 +205,10 @@ class OOCSIThread(threading.Thread):
         super(OOCSIThread, self).__init__()
 
     def run(self):
+        
+        # register exit handler
+        atexit.register(self._stop)
+        
         # run the established connection        
         while self.parent.connected:
             self.parent.loop()

@@ -68,37 +68,66 @@ class TestOOCSICommunication(unittest.TestCase):
     def testChannelCommunicationBurst(self):
         
         eventSink = []
-        eventSink2 = []
         
         def receiveEvent(sender, recipient, event):
             eventSink.append(event)
-        def receiveEvent2(sender, recipient, event):
-            eventSink2.append(event)
         
         o11 = OOCSI()
-        o11.subscribe('testchannel', receiveEvent)
-        o11.subscribe('OOCSI_events', receiveEvent2)
+        o11.subscribe('testchannel_b', receiveEvent)
         o12 = OOCSI()
-        o12.subscribe('testchannel', receiveEvent)
-        o12.subscribe('OOCSI_events', receiveEvent2)
+        o12.subscribe('testchannel_b', receiveEvent)
         o13 = OOCSI()
-        o13.subscribe('testchannel', receiveEvent)
-        o13.subscribe('OOCSI_events', receiveEvent2)
+        o13.subscribe('testchannel_b', receiveEvent)
 
         o2 = OOCSI()
         
         message = {}
         message['burst'] = int(400)
-        o2.send('testchannel', message)
+        o2.send('testchannel_b', message)
 
         time.sleep(0.5)
 
-        self.assertEquals(3, len(eventSink2))
         self.assertEquals(3, len(eventSink))
 
         o11.stop()
         o12.stop()
         o13.stop()
+        o2.stop()
+
+
+    def testChannelCommunicationPingPong(self):
+                
+        eventSink = []
+        o1 = OOCSI()
+        o2 = OOCSI()
+        
+        def receiveEventPing(sender, recipient, event):
+            count = int(event['ping'])-1
+            if count > 0:
+                message = {}
+                message['ping'] = count
+                o2.send('testchannel_pingpong', message)
+                eventSink.append(1)
+        def receiveEventPong(sender, recipient, event):
+            count = int(event['ping'])-1
+            if count > 0:
+                message = {}
+                message['ping'] = count
+                o1.send('testchannel_pingpong', message)
+                eventSink.append(1)
+        
+        o1.subscribe('testchannel_pingpong', receiveEventPong)
+        o2.subscribe('testchannel_pingpong', receiveEventPing)
+        
+        message = {}
+        message['ping'] = 101
+        o1.send('testchannel_pingpong', message)
+
+        time.sleep(2)
+
+        self.assertEquals(100, len(eventSink))
+
+        o1.stop()
         o2.stop()
 
 
