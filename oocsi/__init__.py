@@ -13,8 +13,10 @@ from math import fsum
 
 class OOCSI:
     def __init__(self, handle=None, host='localhost', port=4444, callback=None, logger=None, maxReconnectionAttempts=100000):
-        if handle is None or len(handle.strip()) == 0 or not '#' in handle:
-            self.handle = "OOCSIClient_" + handle + "_" + uuid.uuid4().__str__().replace('-', '')[0:15];
+        if handle is None or len(handle.strip()) == 0:
+            self.handle = "OOCSIClient_" + uuid.uuid4().__str__().replace('-', '')[0:15]
+        elif not '#' in handle:
+            self.handle = handle + "_" + uuid.uuid4().__str__().replace('-', '')[0:15]
         else:
             handler_with_numbers = ''
             for c in handle:
