@@ -8,14 +8,18 @@ import threading
 import atexit
 import time
 import uuid
+from random import randrange
 from math import fsum
 
 class OOCSI:
     def __init__(self, handle=None, host='localhost', port=4444, callback=None, logger=None, maxReconnectionAttempts=100000):
         if handle is None or len(handle.strip()) == 0:
-            self.handle = "OOCSIClient_" + uuid.uuid4().__str__().replace('-', '')[0:15];
+            self.handle = "OOCSIClient_" + uuid.uuid4().__str__().replace('-', '')[0:15]
         else:
-            self.handle = handle
+            randomised_handle = ''
+            for c in handle:
+                randomised_handle += str(randrange(10)) if c is '#' else c
+            self.handle = randomised_handle
             
         self.receivers = {self.handle: [callback]}
         self.calls = {}
